@@ -1,0 +1,4 @@
+arduino terminal command:
+
+g++ main.cpp = compilen
+.\a.exe = execute
