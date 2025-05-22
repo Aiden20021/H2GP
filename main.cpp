@@ -45,15 +45,19 @@ int main(void)
         return 1;
     }
 
+    // width: 208 pixels
+    // height: 183 pixels
     Texture2D textureMeter = LoadTexture("meter.png");        // Texture loading
 
     SetTargetFPS(60);
     int sampleValue, sampleProgress = 50;
 
-    Vector2 center = { 100.0f + textureMeter.width/2, 200 };    // center of gauge
-    float angle_deg = 45.0f;          // pointing to 45 degrees
+
+    Vector2 center = { 100.0f + textureMeter.width/2, 
+                        100.0f + textureMeter.height/2 };    // center of gauge
+    float angle_deg = 0.0f;          // pointing to 45 degrees
     float angle_rad = DEG2RAD * angle_deg;
-    float length = 100.0f;
+    float length = 50.0f;
 
     // Calculate endpoint
     Vector2 end = {
@@ -66,7 +70,7 @@ int main(void)
     {
         // Update
         sampleValue++;
-        if (sampleValue > 100)
+        if (sampleValue > 360)
             sampleValue = 0;
 
         sampleProgress += 0.002f;
@@ -78,6 +82,15 @@ int main(void)
         ClearBackground(RAYWHITE);
 
         DrawTexture(textureMeter, 100, 100, WHITE);
+
+        // TODO calibration!!!
+        angle_deg = sampleValue;
+        angle_rad = DEG2RAD * angle_deg;
+        end = {
+            center.x + cosf(angle_rad) * length,
+            center.y + sinf(angle_rad) * length
+        };
+
         DrawLineV(center, end, RED);        
         // // Draw each panel
         // for (const auto &panel : panels)
