@@ -2,6 +2,7 @@
 #include "ceserial.h"
 #include <string>
 #include <sstream>
+#include <math.h>
 
 using namespace std;
 
@@ -28,11 +29,11 @@ int main(void)
         {{660, 240, 300, 200}, "Overview", ORANGE}};
 
     // Init serial
-#ifdef CE_WINDOWS
-    ceSerial com("\\\\.\\COM3", 9600, 8, 'N', 1); // Windows
-#else
-    ceSerial com("/dev/ttyS0", 9600, 8, 'N', 1); // Linux
-#endif
+    #ifdef CE_WINDOWS
+        ceSerial com("\\\\.\\COM3", 9600, 8, 'N', 1); // Windows
+    #else
+        ceSerial com("/dev/ttyS0", 9600, 8, 'N', 1); // Linux
+    #endif
 
     bool successFlag;
     string serialBuffer;
@@ -44,10 +45,23 @@ int main(void)
         return 1;
     }
 
+    Texture2D textureMeter = LoadTexture("meter.png");        // Texture loading
+
     SetTargetFPS(60);
+    int sampleValue, sampleProgress = 50;
+
+    Vector2 center = { 100.0f + textureMeter.width/2, 200 };    // center of gauge
+    float angle_deg = 45.0f;          // pointing to 45 degrees
+    float angle_rad = DEG2RAD * angle_deg;
+    float length = 100.0f;
+
+    // Calculate endpoint
+    Vector2 end = {
+        center.x + cosf(angle_rad) * length,
+        center.y + sinf(angle_rad) * length
+    };
 
     // Main game loop
-
     while (!WindowShouldClose())
     {
         // Update
@@ -63,36 +77,38 @@ int main(void)
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        // Draw each panel
-        for (const auto &panel : panels)
-        {
-            DrawRectangleRec(panel.bounds, panel.backgroundColor);
-            DrawRectangleLinesEx(panel.bounds, 2, BLACK);
-            DrawText(panel.title, panel.bounds.x + 10, panel.bounds.y + 10, 20, BLACK);
-        }
+        DrawTexture(textureMeter, 100, 100, WHITE);
+        DrawLineV(center, end, RED);        
+        // // Draw each panel
+        // for (const auto &panel : panels)
+        // {
+        //     DrawRectangleRec(panel.bounds, panel.backgroundColor);
+        //     DrawRectangleLinesEx(panel.bounds, 2, BLACK);
+        //     DrawText(panel.title, panel.bounds.x + 10, panel.bounds.y + 10, 20, BLACK);
+        // }
 
-        // Draw sample content in panels
-        // Statistics Panel
-        DrawText(TextFormat("Value: %d", sampleValue), 30, 60, 20, BLACK);
-        DrawRectangle(30, 90, 280, 20, GRAY);
-        DrawRectangle(30, 90, (int)(280 * sampleProgress), 20, BLUE);
+        // // Draw sample content in panels
+        // // Statistics Panel
+        // DrawText(TextFormat("Value: %d", sampleValue), 30, 60, 20, BLACK);
+        // DrawRectangle(30, 90, 280, 20, GRAY);
+        // DrawRectangle(30, 90, (int)(280 * sampleProgress), 20, BLUE);
 
-        // Performance Panel
-        DrawCircle(490, 120, 60, DARKBLUE);
-        DrawCircle(490, 120, 50, RAYWHITE);
-        DrawText(TextFormat("%d%%", sampleValue), 470, 110, 20, BLACK);
+        // // Performance Panel
+        // DrawCircle(490, 120, 60, DARKBLUE);
+        // DrawCircle(490, 120, 50, RAYWHITE);
+        // DrawText(TextFormat("%d%%", sampleValue), 470, 110, 20, BLACK);
 
-        // Status Panel
-        const char *status = (sampleValue > 50) ? "ONLINE" : "OFFLINE";
-        DrawText(status, 680, 100, 30, BLACK);
+        // // Status Panel
+        // const char *status = (sampleValue > 50) ? "ONLINE" : "OFFLINE";
+        // DrawText(status, 680, 100, 30, BLACK);
 
-        // Draw footer
-        DrawText("Dashboard Demo - Press ESC to exit", 10, screenHeight - 30, 20, DARKGRAY);
+        // // Draw footer
+        // DrawText("Dashboard Demo - Press ESC to exit", 10, screenHeight - 30, 20, DARKGRAY);
 
-        // Panel 3: Status
-        DrawText(arduinoStatus.c_str(), 680, 100, 30, BLACK);
+        // // Panel 3: Status
+        // DrawText(arduinoStatus.c_str(), 680, 100, 30, BLACK);
 
-        DrawText("Dashboard met Arduino - ESC om af te sluiten", 10, screenHeight - 30, 20, DARKGRAY);
+        // DrawText("Dashboard met Arduino - ESC om af te sluiten", 10, screenHeight - 30, 20, DARKGRAY);
         EndDrawing();
     }
 
