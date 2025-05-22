@@ -7,7 +7,7 @@ using namespace std;
 
 struct DashboardPanel {
     Rectangle bounds;
-    const char* title;
+    const char *title;
     Color backgroundColor;
 };
 
@@ -20,10 +20,12 @@ int main(void)
 
     // Define panels
     DashboardPanel panels[] = {
-        { { 20, 20, 300, 200 }, "Statistics", LIGHTGRAY },
-        { { 340, 20, 300, 200 }, "Performance", SKYBLUE },
-        { { 660, 20, 300, 200 }, "Status", PINK },
-    };
+        {{20, 20, 300, 200}, "Statistics", LIGHTGRAY},
+        {{340, 20, 300, 200}, "Performance", SKYBLUE},
+        {{660, 20, 300, 200}, "Status", PINK},
+        {{20, 240, 300, 200}, "Information", GREEN},
+        {{340, 240, 300, 200}, "Metrics", PURPLE},
+        {{660, 240, 300, 200}, "Overview", ORANGE}};
 
     // Init serial
 #ifdef CE_WINDOWS
@@ -44,44 +46,48 @@ int main(void)
 
     SetTargetFPS(60);
 
-    // Main loop
+    // Main game loop
+
     while (!WindowShouldClose())
     {
-        // === LEES SERIAL DATA VAN ARDUINO ===
-        while (com.Peek() > 0) {
-            char c = com.ReadChar(successFlag);
-            if (successFlag) {
-                if (c == '\n') {
-                    // Einde van bericht
-                    istringstream iss(serialBuffer);
-                    iss >> arduinoValue; // verwacht een int, bv. "42\n"
-                    arduinoStatus = (arduinoValue > 50) ? "ONLINE" : "OFFLINE";
-                    serialBuffer.clear();
-                } else {
-                    serialBuffer += c;
-                }
-            }
-        }
+        // Update
+        sampleValue++;
+        if (sampleValue > 100)
+            sampleValue = 0;
 
-        // === TEKEN DASHBOARD ===
+        sampleProgress += 0.002f;
+        if (sampleProgress > 1.0f)
+            sampleProgress = 0.0f;
+
+        // Draw
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        for (const auto& panel : panels) {
+        // Draw each panel
+        for (const auto &panel : panels)
+        {
             DrawRectangleRec(panel.bounds, panel.backgroundColor);
             DrawRectangleLinesEx(panel.bounds, 2, BLACK);
             DrawText(panel.title, panel.bounds.x + 10, panel.bounds.y + 10, 20, BLACK);
         }
 
-        // Panel 1: Statistics
-        DrawText(TextFormat("Arduino Value: %d", arduinoValue), 30, 60, 20, BLACK);
+        // Draw sample content in panels
+        // Statistics Panel
+        DrawText(TextFormat("Value: %d", sampleValue), 30, 60, 20, BLACK);
         DrawRectangle(30, 90, 280, 20, GRAY);
-        DrawRectangle(30, 90, (int)(280 * (arduinoValue / 100.0f)), 20, BLUE);
+        DrawRectangle(30, 90, (int)(280 * sampleProgress), 20, BLUE);
 
-        // Panel 2: Performance
+        // Performance Panel
         DrawCircle(490, 120, 60, DARKBLUE);
         DrawCircle(490, 120, 50, RAYWHITE);
-        DrawText(TextFormat("%d%%", arduinoValue), 470, 110, 20, BLACK);
+        DrawText(TextFormat("%d%%", sampleValue), 470, 110, 20, BLACK);
+
+        // Status Panel
+        const char *status = (sampleValue > 50) ? "ONLINE" : "OFFLINE";
+        DrawText(status, 680, 100, 30, BLACK);
+
+        // Draw footer
+        DrawText("Dashboard Demo - Press ESC to exit", 10, screenHeight - 30, 20, DARKGRAY);
 
         // Panel 3: Status
         DrawText(arduinoStatus.c_str(), 680, 100, 30, BLACK);
