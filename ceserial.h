@@ -32,9 +32,9 @@
 	#endif
 #endif
 
-#ifdef CE_WINDOWS
-	#include <windows.h>
-#endif
+// #ifdef CE_WINDOWS
+// 	#include <windows.h>
+// #endif
 
 class ceSerial {
 private:

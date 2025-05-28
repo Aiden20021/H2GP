@@ -1,5 +1,6 @@
+
+//#include "ceserial.h"
 #include "raylib.h"
-#include "ceserial.h"
 #include <string>
 #include <sstream>
 
@@ -28,26 +29,28 @@ int main(void)
         {{660, 240, 300, 200}, "Overview", ORANGE}};
 
     // Init serial
-#ifdef CE_WINDOWS
-    ceSerial com("\\\\.\\COM3", 9600, 8, 'N', 1); // Windows
-#else
-    ceSerial com("/dev/ttyS0", 9600, 8, 'N', 1); // Linux
-#endif
+// #ifdef CE_WINDOWS
+//     ceSerial com("\\\\.\\COM3", 9600, 8, 'N', 1); // Windows
+// #else
+//     ceSerial com("/dev/ttyS0", 9600, 8, 'N', 1); // Linux
+// #endif
 
     bool successFlag;
     string serialBuffer;
     int arduinoValue = 0;
     string arduinoStatus = "UNKNOWN";
 
-    if (com.Open() != 0) {
-        CloseWindow();
-        return 1;
-    }
+    // if (com.Open() != 0) {
+    //     CloseWindow();
+    //     return 1;
+    // }
+
+    int sampleValue = 0;
+    float sampleProgress = 0;
 
     SetTargetFPS(60);
 
     // Main game loop
-
     while (!WindowShouldClose())
     {
         // Update
@@ -96,7 +99,7 @@ int main(void)
         EndDrawing();
     }
 
-    com.Close();
+   // com.Close();
     CloseWindow();
 
     return 0;
