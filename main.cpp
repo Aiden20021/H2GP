@@ -3,10 +3,11 @@
 #include "raylib.h"
 #include <string>
 #include <sstream>
-
+// test1
 using namespace std;
 
-struct DashboardPanel {
+struct DashboardPanel
+{
     Rectangle bounds;
     const char *title;
     Color backgroundColor;
@@ -88,8 +89,8 @@ int main(void)
         // Status Panel
         const char *status = (sampleValue > 50) ? "ONLINE" : "OFFLINE";
         DrawText(status, 680, 100, 30, BLACK);
-        //gewoon test
-        // Draw footer
+        // gewoon test
+        //  Draw footer
         DrawText("Dashboard Demo - Press ESC to exit", 10, screenHeight - 30, 20, DARKGRAY);
 
         // Panel 3: Status
