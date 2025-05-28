@@ -1,12 +1,9 @@
-#include "raylib.h"
-#include "ceserial.h"
 #include <string>
-#include <sstream>
-#include <math.h>
+#include "raylib.h"
 
-using namespace std;
-
-struct DashboardPanel {
+// Dashboard panel structure
+struct DashboardPanel
+{
     Rectangle bounds;
     const char *title;
     Color backgroundColor;
@@ -14,12 +11,15 @@ struct DashboardPanel {
 
 int main(void)
 {
-    // Init raylib window
+    // Initialize window
     const int screenWidth = 1024;
     const int screenHeight = 768;
     InitWindow(screenWidth, screenHeight, "Dashboard");
 
-    // Define panels
+    // Load logo texture
+    Texture2D logo = LoadTexture("h2logo.png");
+
+    // Define dashboard panels
     DashboardPanel panels[] = {
         {{20, 20, 300, 200}, "Statistics", LIGHTGRAY},
         {{340, 20, 300, 200}, "Performance", SKYBLUE},
@@ -28,49 +28,19 @@ int main(void)
         {{340, 240, 300, 200}, "Metrics", PURPLE},
         {{660, 240, 300, 200}, "Overview", ORANGE}};
 
-    // Init serial
-    #ifdef CE_WINDOWS
-        ceSerial com("\\\\.\\COM3", 9600, 8, 'N', 1); // Windows
-    #else
-        ceSerial com("/dev/ttyS0", 9600, 8, 'N', 1); // Linux
-    #endif
-
-    bool successFlag;
-    string serialBuffer;
-    int arduinoValue = 0;
-    string arduinoStatus = "UNKNOWN";
-
-    if (com.Open() != 0) {
-        CloseWindow();
-        return 1;
-    }
-
-    // width: 208 pixels
-    // height: 183 pixels
-    Texture2D textureMeter = LoadTexture("meter.png");        // Texture loading
+    // Sample data (you can replace this with real data)
+    int sampleValue = 0;
+    float sampleProgress = 0.0f;
 
     SetTargetFPS(60);
-    int sampleValue, sampleProgress = 50;
-
-
-    Vector2 center = { 100.0f + textureMeter.width/2, 
-                        100.0f + textureMeter.height/2 };    // center of gauge
-    float angle_deg = 0.0f;          // pointing to 45 degrees
-    float angle_rad = DEG2RAD * angle_deg;
-    float length = 50.0f;
-
-    // Calculate endpoint
-    Vector2 end = {
-        center.x + cosf(angle_rad) * length,
-        center.y + sinf(angle_rad) * length
-    };
 
     // Main game loop
+
     while (!WindowShouldClose())
     {
         // Update
         sampleValue++;
-        if (sampleValue > 360)
+        if (sampleValue > 100)
             sampleValue = 0;
 
         sampleProgress += 0.002f;
@@ -81,52 +51,41 @@ int main(void)
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        DrawTexture(textureMeter, 100, 100, WHITE);
+        // Draw each panel
+        for (const auto &panel : panels)
+        {
+            DrawRectangleRec(panel.bounds, panel.backgroundColor);
+            DrawRectangleLinesEx(panel.bounds, 2, BLACK);
+            DrawText(panel.title, panel.bounds.x + 10, panel.bounds.y + 10, 20, BLACK);
+        }
 
-        // TODO calibration!!!
-        angle_deg = sampleValue;
-        angle_rad = DEG2RAD * angle_deg;
-        end = {
-            center.x + cosf(angle_rad) * length,
-            center.y + sinf(angle_rad) * length
-        };
+        // Draw sample content in panels
+        // Statistics Panel
+        DrawText(TextFormat("Value: %d", sampleValue), 30, 60, 20, BLACK);
+        DrawRectangle(30, 90, 280, 20, GRAY);
+        DrawRectangle(30, 90, (int)(280 * sampleProgress), 20, BLUE);
 
-        DrawLineV(center, end, RED);        
-        // // Draw each panel
-        // for (const auto &panel : panels)
-        // {
-        //     DrawRectangleRec(panel.bounds, panel.backgroundColor);
-        //     DrawRectangleLinesEx(panel.bounds, 2, BLACK);
-        //     DrawText(panel.title, panel.bounds.x + 10, panel.bounds.y + 10, 20, BLACK);
-        // }
+        // Performance Panel
+        DrawCircle(490, 120, 60, DARKBLUE);
+        DrawCircle(490, 120, 50, RAYWHITE);
+        DrawText(TextFormat("%d%%", sampleValue), 470, 110, 20, BLACK);
 
-        // // Draw sample content in panels
-        // // Statistics Panel
-        // DrawText(TextFormat("Value: %d", sampleValue), 30, 60, 20, BLACK);
-        // DrawRectangle(30, 90, 280, 20, GRAY);
-        // DrawRectangle(30, 90, (int)(280 * sampleProgress), 20, BLUE);
+        // Status Panel
+        const char *status = (sampleValue > 50) ? "ONLINE" : "OFFLINE";
+        DrawText(status, 680, 100, 30, BLACK);
 
-        // // Performance Panel
-        // DrawCircle(490, 120, 60, DARKBLUE);
-        // DrawCircle(490, 120, 50, RAYWHITE);
-        // DrawText(TextFormat("%d%%", sampleValue), 470, 110, 20, BLACK);
+        // Draw logo in the bottom right corner
+        DrawTexture(logo, screenWidth - logo.width - 20, screenHeight - logo.height - 20, WHITE);
 
-        // // Status Panel
-        // const char *status = (sampleValue > 50) ? "ONLINE" : "OFFLINE";
-        // DrawText(status, 680, 100, 30, BLACK);
+        // Draw footer
+        DrawText("Dashboard Demo - Press ESC to exit", 10, screenHeight - 30, 20, DARKGRAY);
 
-        // // Draw footer
-        // DrawText("Dashboard Demo - Press ESC to exit", 10, screenHeight - 30, 20, DARKGRAY);
-
-        // // Panel 3: Status
-        // DrawText(arduinoStatus.c_str(), 680, 100, 30, BLACK);
-
-        // DrawText("Dashboard met Arduino - ESC om af te sluiten", 10, screenHeight - 30, 20, DARKGRAY);
         EndDrawing();
     }
 
-    com.Close();
-    CloseWindow();
+    // Unload texture
+    UnloadTexture(logo);
 
+    CloseWindow();
     return 0;
 }
