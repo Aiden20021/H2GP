@@ -2,10 +2,10 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++17
 LDFLAGS = -L. -lraylib -lgdi32 -lwinmm
 
-all: dashboard
+all: main
 
-dashboard: dashboard.cpp
-	$(CXX) dashboard.cpp -o dashboard $(CXXFLAGS) $(LDFLAGS)
+main: main.cpp
+	$(CXX) main.cpp -o main $(CXXFLAGS) $(LDFLAGS)
 
 clean:
-	del dashboard.exe 
+	del main.exe 
