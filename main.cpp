@@ -85,7 +85,7 @@ int main(void)
         // Status Panel
         const char *status = (sampleValue > 50) ? "ONLINE" : "OFFLINE";
         DrawText(status, 680, 100, 30, BLACK);
-
+        //gewoon test
         // Draw footer
         DrawText("Dashboard Demo - Press ESC to exit", 10, screenHeight - 30, 20, DARKGRAY);
 
